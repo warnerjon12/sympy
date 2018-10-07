@@ -832,9 +832,8 @@ class ComplexRootOf(RootOf):
                     # eventually the root will be found.
                     #
                     # It is also possible that findroot will not have any
-                    # successful iterations to process (in which case it
-                    # will fail to initialize a variable that is tested
-                    # after the iterations and raise an UnboundLocalError).
+                    # successful iterations to process, also resulting in
+                    # a ValueError being raised.
                     if self.is_real or self.is_imaginary:
                         if not bool(root.imag) == self.is_real and (
                                 a <= root <= b):
@@ -843,7 +842,7 @@ class ComplexRootOf(RootOf):
                             break
                     elif (ax <= root.real <= bx and ay <= root.imag <= by):
                         break
-                except (UnboundLocalError, ValueError):
+                except (ValueError):
                     pass
                 interval = interval.refine()
 
