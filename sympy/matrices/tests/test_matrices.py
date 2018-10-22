@@ -1958,15 +1958,7 @@ def test_diff():
     assert A.diff(a) == MutableDenseMatrix([[0, 0], [0, 0]])
 
     B = ImmutableDenseMatrix([a, b])
-    assert A.diff(B) == Array(
-        [[[
-            [0,0],
-            [0,0]
-        ]],
-        [[
-            [0,0],
-            [0,0]
-        ]]])
+    assert A.diff(B) == A.zeros(2)
 
     # Test diff with tuples:
 
@@ -2189,7 +2181,7 @@ def test_matrix_norm():
     assert A.norm('frobenius') == sqrt(389)/2
 
     # Test properties of matrix norms
-    # http://en.wikipedia.org/wiki/Matrix_norm#Definition
+    # https://en.wikipedia.org/wiki/Matrix_norm#Definition
     # Two matrices
     A = Matrix([[1, 2], [3, 4]])
     B = Matrix([[5, 5], [-2, 2]])
@@ -2214,7 +2206,7 @@ def test_matrix_norm():
             assert dif == 0
 
     # Test Properties of Vector Norms
-    # http://en.wikipedia.org/wiki/Vector_norm
+    # https://en.wikipedia.org/wiki/Vector_norm
     # Two column vectors
     a = Matrix([1, 1 - 1*I, -3])
     b = Matrix([S(1)/2, 1*I, 1])
@@ -2649,7 +2641,7 @@ def test_issue_11434():
 
 def test_rank_regression_from_so():
     # see:
-    # http://stackoverflow.com/questions/19072700/why-does-sympy-give-me-the-wrong-answer-when-i-row-reduce-a-symbolic-matrix
+    # https://stackoverflow.com/questions/19072700/why-does-sympy-give-me-the-wrong-answer-when-i-row-reduce-a-symbolic-matrix
 
     nu, lamb = symbols('nu, lambda')
     A = Matrix([[-3*nu,         1,                  0,  0],
@@ -3128,3 +3120,56 @@ def test_issue_8240():
     assert len(eigenvals) == 3
     assert eigenvals.count(x) == 2
     assert eigenvals.count(y) == 1
+
+def test_legacy_det():
+    # Minimal support for legacy keys for 'method' in det()
+    # Partially copied from test_determinant()
+
+    M = Matrix(( ( 3, -2,  0, 5),
+                 (-2,  1, -2, 2),
+                 ( 0, -2,  5, 0),
+                 ( 5,  0,  3, 4) ))
+
+    assert M.det(method="bareis") == -289
+    assert M.det(method="det_lu") == -289
+    assert M.det(method="det_LU") == -289
+
+    M = Matrix(( (3, 2, 0, 0, 0),
+                 (0, 3, 2, 0, 0),
+                 (0, 0, 3, 2, 0),
+                 (0, 0, 0, 3, 2),
+                 (2, 0, 0, 0, 3) ))
+
+    assert M.det(method="bareis") == 275
+    assert M.det(method="det_lu") == 275
+    assert M.det(method="Bareis") == 275
+
+    M = Matrix(( (1, 0,  1,  2, 12),
+                 (2, 0,  1,  1,  4),
+                 (2, 1,  1, -1,  3),
+                 (3, 2, -1,  1,  8),
+                 (1, 1,  1,  0,  6) ))
+
+    assert M.det(method="bareis") == -55
+    assert M.det(method="det_lu") == -55
+    assert M.det(method="BAREISS") == -55
+
+    M = Matrix(( (-5,  2,  3,  4,  5),
+                 ( 1, -4,  3,  4,  5),
+                 ( 1,  2, -3,  4,  5),
+                 ( 1,  2,  3, -2,  5),
+                 ( 1,  2,  3,  4, -1) ))
+
+    assert M.det(method="bareis") == 11664
+    assert M.det(method="det_lu") == 11664
+    assert M.det(method="BERKOWITZ") == 11664
+
+    M = Matrix(( ( 2,  7, -1, 3, 2),
+                 ( 0,  0,  1, 0, 1),
+                 (-2,  0,  7, 0, 2),
+                 (-3, -2,  4, 5, 3),
+                 ( 1,  0,  0, 0, 1) ))
+
+    assert M.det(method="bareis") == 123
+    assert M.det(method="det_lu") == 123
+    assert M.det(method="LU") == 123

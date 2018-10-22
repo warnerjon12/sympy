@@ -280,7 +280,7 @@ class MatrixDeterminant(MatrixCommon):
         a matrix.  That is, the transpose of the matrix of cofactors.
 
 
-        http://en.wikipedia.org/wiki/Adjugate
+        https://en.wikipedia.org/wiki/Adjugate
 
         See Also
         ========
@@ -384,15 +384,56 @@ class MatrixDeterminant(MatrixCommon):
                          lambda i, j: self.cofactor(i, j, method))
 
     def det(self, method="bareiss", iszerofunc=None):
-        """Computes the determinant of a matrix.  If the matrix
-        is at most 3x3, a hard-coded formula is used.
-        Otherwise, the determinant using the method `method`.
+        """Computes the determinant of a matrix.
 
+        Parameters
+        ==========
 
-        Possible values for "method":
-          bareis
-          berkowitz
-          lu
+        method : string, optional
+            Specifies the algorithm used for computing the matrix determinant.
+
+            If the matrix is at most 3x3, a hard-coded formula is used and the
+            specified method is ignored. Otherwise, it defaults to
+            ``'bareiss'``.
+
+            If it is set to ``'bareiss'``, Bareiss' fraction-free algorithm will
+            be used.
+
+            If it is set to ``'berkowitz'``, Berkowitz' algorithm will be used.
+
+            Otherwise, if it is set to ``'lu'``, LU decomposition will be used.
+
+            .. note::
+                For backward compatibility, legacy keys like "bareis" and
+                "det_lu" can still be used to indicate the corresponding
+                methods.
+                And the keys are also case-insensitive for now. However, it is
+                suggested to use the precise keys for specifying the method.
+
+        iszerofunc : FunctionType or None, optional
+            If it is set to ``None``, it will be defaulted to ``_iszero`` if the
+            method is set to ``'bareiss'``, and ``_is_zero_after_expand_mul`` if
+            the method is set to ``'lu'``.
+
+            It can also accept any user-specified zero testing function, if it
+            is formatted as a function which accepts a single symbolic argument
+            and returns ``True`` if it is tested as zero and ``False`` if it
+            tested as non-zero, and also ``None`` if it is undecidable.
+
+        Returns
+        =======
+
+        det : Basic
+            Result of determinant.
+
+        Raises
+        ======
+
+        ValueError
+            If unrecognized keys are given for ``method`` or ``iszerofunc``.
+
+        NonSquareMatrixError
+            If attempted to calculate determinant from a non-square matrix.
         """
 
         # sanitize `method`
@@ -1114,28 +1155,67 @@ class MatrixEigen(MatrixSubspaces):
         return self.hstack(*p_cols), self.diag(*diag)
 
     def eigenvals(self, error_when_incomplete=True, **flags):
-        """Return eigenvalues using the Berkowitz agorithm to compute
+        r"""Return eigenvalues using the Berkowitz agorithm to compute
         the characteristic polynomial.
 
         Parameters
         ==========
 
-        error_when_incomplete : bool
-            Raise an error when not all eigenvalues are computed. This is
-            caused by ``roots`` not returning a full list of eigenvalues.
+        error_when_incomplete : bool, optional
+            If it is set to ``True``, it will raise an error if not all
+            eigenvalues are computed. This is caused by ``roots`` not returning
+            a full list of eigenvalues.
 
-        simplify : bool or function
-            If simplify is set to True, it attempts to return the most
+        simplify : bool or function, optional
+            If it is set to ``True``, it attempts to return the most
             simplified form of expressions returned by applying default
             simplification method in every routine.
-            If simplify is set to False, it will skip simplification in this
+
+            If it is set to ``False``, it will skip simplification in this
             particular routine to save computation resources.
-            If you pass a function to simplify, it will attempt to apply
+
+            If a function is passed to, it will attempt to apply
             the particular function as simplification method.
 
-        Since the roots routine doesn't always work well with Floats,
-        they will be replaced with Rationals before calling that
-        routine. If this is not desired, set flag ``rational`` to False.
+        rational : bool, optional
+            If it is set to ``True``, every floating point numbers would be
+            replaced with rationals before computation. It can solve some
+            issues of ``roots`` routine not working well with floats.
+
+        multiple : bool, optional
+            If it is set to ``True``, the result will be in the form of a
+            list.
+
+            If it is set to ``False``, the result will be in the form of a
+            dictionary.
+
+        Returns
+        =======
+
+        eigs : list or dict
+            Eigenvalues of a matrix. The return format would be specified by
+            the key ``multiple``.
+
+        Raises
+        ======
+
+        MatrixError
+            If not enough roots had got computed.
+
+        NonSquareMatrixError
+            If attempted to compute eigenvalues from a non-square matrix.
+
+        See Also
+        ========
+
+        MatrixDeterminant.charpoly
+        eigenvects
+
+        Notes
+        =====
+
+        Eigenvalues of a matrix `A` can be computed by solving a matrix
+        equation `\det(A - \lambda I) = 0`
         """
         simplify = flags.get('simplify', False) # Collect simplify flag before popped up, to reuse later in the routine.
         multiple = flags.get('multiple', False) # Collect multiple flag to decide whether return as a dict or list.
@@ -1605,7 +1685,7 @@ class MatrixEigen(MatrixSubspaces):
 class MatrixCalculus(MatrixCommon):
     """Provides calculus-related matrix operations."""
 
-    def diff(self, *args):
+    def diff(self, *args, **kwargs):
         """Calculate the derivative of each element in the matrix.
         ``args`` will be passed to the ``integrate`` function.
 
@@ -1626,8 +1706,10 @@ class MatrixCalculus(MatrixCommon):
         integrate
         limit
         """
+        # XXX this should be handled here rather than in Derivative
         from sympy import Derivative
-        return Derivative(self, *args, evaluate=True)
+        kwargs.setdefault('evaluate', True)
+        return Derivative(self, *args, **kwargs)
 
     def _eval_derivative(self, arg):
         return self.applyfunc(lambda x: x.diff(arg))
@@ -2701,7 +2783,7 @@ class MatrixBase(MatrixDeprecated,
         References
         ==========
 
-        .. [1] http://en.wikipedia.org/wiki/Gaussian_elimination
+        .. [1] https://en.wikipedia.org/wiki/Gaussian_elimination
 
         """
         from sympy.matrices import Matrix, zeros

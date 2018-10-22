@@ -1582,6 +1582,11 @@ def test_sympy__functions__combinatorial__numbers__euler():
     assert _test_args(euler(x))
 
 
+def test_sympy__functions__combinatorial__numbers__carmichael():
+    from sympy.functions.combinatorial.numbers import carmichael
+    assert _test_args(carmichael(x))
+
+
 def test_sympy__functions__combinatorial__numbers__fibonacci():
     from sympy.functions.combinatorial.numbers import fibonacci
     assert _test_args(fibonacci(x))
@@ -3877,6 +3882,23 @@ def test_sympy__tensor__tensor__TensMul():
     p = S1('p')
     q = S1('q')
     assert _test_args(3*p(a)*q(b))
+
+
+def test_sympy__tensor__tensor__TensorElement():
+    from sympy.tensor.tensor import TensorIndexType, tensorhead, TensorElement
+    L = TensorIndexType("L")
+    A = tensorhead("A", [L, L], [[1], [1]])
+    telem = TensorElement(A(x, y), {x: 1})
+    assert _test_args(telem)
+
+
+def test_sympy__tensor__toperators__PartialDerivative():
+    from sympy.tensor.tensor import TensorIndexType, tensor_indices, tensorhead
+    from sympy.tensor.toperators import PartialDerivative
+    Lorentz = TensorIndexType('Lorentz', dummy_fmt='L')
+    a, b = tensor_indices('a,b', Lorentz)
+    A = tensorhead("A", [Lorentz], [[1]])
+    assert _test_args(PartialDerivative(A(a), A(b)))
 
 
 def test_as_coeff_add():
